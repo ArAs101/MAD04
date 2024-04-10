@@ -2,6 +2,10 @@ package com.example.movieappmad24.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+val Indigo500 = Color(0XFF3F51B5)
+val Indigo100  = Color(0XFFC5CAE9)
+val Pink200 = Color(0XFFFF4081)
+
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
