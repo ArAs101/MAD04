@@ -29,10 +29,9 @@ fun WatchlistScreen(
 
         MovieList(
             modifier = Modifier.padding(innerPadding),
-            movies = getMovies(),
+            movies = moviesViewModel.favoriteMovies,
             navController = navController,
-            viewModel = moviesViewModel
+            moviesViewModel
         )
-
     }
 }

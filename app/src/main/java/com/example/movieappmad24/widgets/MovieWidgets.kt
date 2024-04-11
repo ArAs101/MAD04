@@ -58,16 +58,16 @@ import com.example.movieappmad24.viewmodels.MoviesViewModel
 @Composable
 fun MovieList(
     modifier: Modifier,
-    movies: List<Movie> = getMovies(),
+    movies: List<Movie>,
     navController: NavController,
-    viewModel: MoviesViewModel
+    moviesViewModel: MoviesViewModel
 ){
     LazyColumn(modifier = modifier) {
-        items(viewModel.movies) { movie ->
+        items(movies) { movie ->
             MovieRow(
                 movie = movie,
                 onFavoriteClick = {movieId ->
-                    viewModel.toggleFavoriteMovie(movieId)
+                    moviesViewModel.toggleFavoriteMovie(movieId)
                 },
                 onItemClick = { movieId ->
                     navController.navigate(route = Screen.DetailScreen.withId(movieId))
@@ -102,7 +102,6 @@ fun MovieRow(
             )
 
             MovieDetails(modifier = modifier.padding(12.dp), movie = movie)
-
         }
     }
 }
@@ -122,7 +121,7 @@ fun MovieCardHeader(
 
         MovieImage(imageUrl)
 
-        FavoriteIcon(isFavorite = isFavorite, onFavoriteClick)
+        FavoriteIcon(isFavorite = isFavorite, onFavoriteClick = onFavoriteClick)
     }
 }
 
@@ -155,14 +154,13 @@ fun FavoriteIcon(
         Icon(
             modifier = Modifier.clickable {
                 onFavoriteClick() },
-            tint = MaterialTheme.colorScheme.secondary,
+            tint = Color.Red,
             imageVector =
             if (isFavorite) {
                 Icons.Filled.Favorite
             } else {
                 Icons.Default.FavoriteBorder
             },
-
             contentDescription = "Add to favorites")
     }
 }

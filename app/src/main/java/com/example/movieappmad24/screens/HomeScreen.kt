@@ -29,7 +29,7 @@ fun HomeScreen(
             modifier = Modifier.padding(innerPadding),
             movies = moviesViewModel.movies,
             navController = navController,
-            viewModel = moviesViewModel
+            moviesViewModel
         )
     }
 }
