@@ -1,6 +1,5 @@
 package com.example.movieappmad24.screens
 
-import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -15,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,9 +28,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
-import com.example.movieappmad24.R
-import com.example.movieappmad24.Trailer
-import com.example.movieappmad24.models.getMovies
 import com.example.movieappmad24.viewmodels.MoviesViewModel
 import com.example.movieappmad24.widgets.HorizontalScrollableImageView
 import com.example.movieappmad24.widgets.MovieRow
@@ -67,7 +64,75 @@ fun DetailScreen(
                     },
                     onItemClick = {}
                 )
-                Trailer(movie = movie)
+
+                Text(text = "Movie Trailer")
+
+                var lifecycle by remember {
+                    mutableStateOf(Lifecycle.Event.ON_CREATE)
+                }
+                val context = LocalContext.current
+                val lifecycleOwner = LocalLifecycleOwner.current
+                var playbackPosition by remember { mutableLongStateOf(0L) }
+                var playWhenReady by remember { mutableStateOf(true) }
+
+                val exoPlayer = remember {
+                    ExoPlayer.Builder(context).build()
+                }
+
+                DisposableEffect(exoPlayer) {
+                    val mediaItem =
+                        MediaItem.fromUri("android.resource://${context.packageName}/${movie.trailer}")
+                    exoPlayer.setMediaItem(mediaItem)
+                    exoPlayer.prepare()
+                    exoPlayer.playWhenReady = true
+                    onDispose {
+                        playbackPosition = exoPlayer.currentPosition
+                        playWhenReady = exoPlayer.playWhenReady
+                        exoPlayer.release()
+                    }
+                }
+
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        lifecycle = event
+                        when (lifecycle) {
+                            Lifecycle.Event.ON_RESUME -> {
+                                Log.e("RESUMEExoPlayer", "Resume executed")
+                                exoPlayer.playWhenReady = playWhenReady
+                                exoPlayer.seekTo(playbackPosition)
+                            }
+
+                            Lifecycle.Event.ON_PAUSE -> {
+                                Log.e("PAUSEExoPlayer", "Pause executed")
+                                playbackPosition = exoPlayer.currentPosition
+                                exoPlayer.pause()
+                            }
+
+                            Lifecycle.Event.ON_STOP -> {
+                                Log.e("STOPExoPlayer", "Stop/Pause executed")
+                                exoPlayer.pause()
+                            }
+
+                            else -> Unit
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+
+                    onDispose {
+                        exoPlayer.release()
+                        lifecycleOwner.lifecycle.removeObserver(observer)
+                    }
+                }
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f),
+                    factory = {
+                        PlayerView(context).also { playerView ->
+                            playerView.player = exoPlayer
+                        }
+                    }
+                )
 
                 HorizontalScrollableImageView(movie = movie)
             }
